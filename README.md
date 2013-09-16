@@ -1,9 +1,8 @@
 The audioAnalyser uses the HTML 5 Audio API (CHROME, FIREFOX) to create an "AudioAnalyser" object, which takes the fft of an audio input. The object can be viewed as a blackbox where the user defines an audio input and retrieves and array of fft values without worrying about the details. It is up to the user to user/display the fft values in whatever way is suitable. The "AudioAnalyser" object triggers a 'drawReady' event each time the fft for the next window is available.  
 
-				 ______________
-				[]			  []
-AUDIO INPUT---->[]  ANALYSER  [] ---> FFT values 
-				[]____________[]
+
+AUDIO INPUT----> [  ANALYSER  ] ---> FFT values 
+		
 
 
 The application requires uses: 
@@ -18,6 +17,7 @@ example:
 Initial Setup: 
 
  // AUDIO INPUT VARIABLES
+ 
         var audio = new Audio();
         	audio.src = 'music/song.mp3';
         	audio.controls = true;
