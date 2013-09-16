@@ -1,0 +1,142 @@
+<html>
+
+
+<head>
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+</head>
+
+<body>
+    
+    <!--**********************************
+                    HTML
+    ********************************** *-->
+    <h1 id="loading" style='text-align:center;'> Please wait. The audio is loading.. </h1>
+
+	<div id="container" align="center">
+        <div align="center" id="canvasDiv" style="width:800px; height:400px;"></div>
+        <div id="slider" style="width:800px; height:25px;"></div>
+        <button id="playButton">PLAY</button>
+        <button id="pauseButton">PAUSE</button>
+    </div>
+
+    <!-- **********************************
+                  JAVASCRIPT
+    ********************************** -->
+    <script type="text/javascript" src="js/chroma.js"></script>
+	<script type="text/javascript" src="js/audioAnalyser.js"></script>
+	<script type="text/javascript" src="js/progressBar.js"></script>
+	<script type="text/javascript">
+
+    
+    $(document).ready(function(){
+
+        $('#container').hide();
+
+    	// AUDIO INPUT VARIABLES
+    	var audio = new Audio();
+    		audio.src = 'music/chipchip.mp3';
+    		audio.controls = true;
+    		audio.autoplay = false;
+    		audio.load();
+
+    	var sourceNode;
+
+    	var analyser = new AudioAnalyser(audio,'canvasDiv',64); 
+    		analyser.setup(); 
+    	
+        //CANVAS VARIABLES
+        var divID = 'canvasDiv';
+
+        var canvasHeight =  $("#"+divID).height();
+        var canvasWidth  =   $("#"+divID).width();
+        $("#"+divID).append('<canvas id="canvas" width="'+canvasWidth+'" height="'+canvasHeight+'" + style="display: block; background-color: #2e3234;"></canvas>');
+        var ctx = $("#canvas").get()[0].getContext("2d");        
+            ctx.width  = $("#"+divID).width();
+            ctx.height = $("#"+divID).height();;
+
+        var tempCanvas = document.createElement("canvas"); // create a temp canvas we use for copying and scrolling
+            tempCanvas.width  =   $("#"+divID).width();
+            tempCanvas.height =   $("#"+divID).height();
+        var tempCtx    = tempCanvas.getContext("2d");
+            
+
+        var gradient =  ctx.createLinearGradient(0,0,0,canvasHeight);
+                        gradient.addColorStop(1.0,'#FFFFFF');
+                        gradient.addColorStop(0.5,'#FFFFFF');
+                        gradient.addColorStop(0.0,'#ffffff');
+
+        // CANVAS DRAWING FUNCTION
+        $("#"+divID).on('drawReady',function(){
+
+            array = analyser.getLeft();
+            array2 = analyser.getRight();
+            window.array = array;
+            //clear the current state
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+            //set the fill style
+            ctx.fillStyle=gradient;
+
+            var value, value2;
+            var binWidth = canvasWidth/array.length*0.6;
+            var binSpacing = canvasWidth/array.length;
+            var binNormalization = (canvasHeight/(2*256));
+
+            for ( var i = 0; i < (array.length); i++ ){
+                value = array[i];
+                value2 = array2[i];
+
+                //plotting each freq bin. Normalization by a factor of (this.canvasHeight/(2*256))
+                //DRAW LEFT CHANNEL
+                    ctx.fillRect(3+i*binSpacing,                            // x corner
+                                  canvasHeight/2-value*binNormalization,   // y corner
+                                  binWidth,                 // bin width
+                                  value*binNormalization);  // bin height
+                //DRAW RIGHT CHANNEL
+                    ctx.fillRect(3+i*binSpacing,        // x corner
+                                  canvasHeight/2,  // y corner
+                                  binWidth,                 // bin width
+                                  value2*binNormalization); // bin height
+            }
+        });
+
+        $("#"+divID).on('audioLoaded',function(){
+            $('#loading').hide()
+            $('#container').show();
+        });
+        
+        var slider = new Slider("slider",audio);
+        	slider.drawFrame();
+
+        // PAUSE BUTTON
+        $('#pauseButton').on('click',function(){
+            audio.pause();
+            console.log(audio.paused);
+        });
+
+        audio.addEventListener("pause",function(){
+            clearInterval(myInterval);
+        });
+
+        // PLAY BUTTON
+        $("#playButton").on('click', function(){
+            audio.play();
+            console.log(audio.paused);
+        });
+
+        var myInterval;
+        audio.addEventListener("play",function(){
+            myInterval = setInterval(function(){
+                slider.drawCurrTime(audio.currentTime,audio.duration)
+            },500);
+        });
+
+    	window.analyser = analyser;
+    	window.audio = audio;
+    });
+	</script>
+
+</body>
+
+
+</html>

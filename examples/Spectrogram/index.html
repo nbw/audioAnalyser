@@ -1,0 +1,157 @@
+<html>
+
+
+<head>	
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+
+    <style>
+
+    </style>
+
+</head>
+
+<body>
+    
+    <!--**********************************
+                    HTML
+    ********************************** *-->
+
+    <div id="container" align="center" style="padding-top:50px;">
+        <div align="center" id="canvasDiv" style="width:800px; height:512px;"></div>
+        <div id="slider" style="width:800px; height:25px;"></div>
+        <button id="playButton">PLAY</button>
+        <button id="pauseButton">PAUSE</button>
+    </div>
+
+    <!--**********************************
+                  JAVASCRIPT
+    **********************************-->
+    <script type="text/javascript" src="js/chroma.js"></script>
+	<script type="text/javascript" src="js/audioAnalyser.js"></script>
+	<script type="text/javascript" src="js/progressBar.js"></script>	
+	<script type="text/javascript">
+
+    $(document).ready(function(){
+
+        // AUDIO INPUT VARIABLES
+        var audio = new Audio();
+        	audio.src = 'music/Trends.mp3';
+        	audio.controls = true;
+        	audio.autoplay = false;
+        	audio.load();
+
+        var analyser = new AudioAnalyser(audio,'canvasDiv',32); 
+        	analyser.setup(); 
+
+        //CANVAS DECORATIONS
+        var divID = 'canvasDiv';
+
+        var canvasHeight =  $("#"+divID).height();
+        var canvasWidth  =   $("#"+divID).width();
+        $("#"+divID).append('<canvas id="canvas" width="'+canvasWidth+'" height="'+canvasHeight+'" + style="display: block; background-color: #FFFFFF;"></canvas>');
+        var ctx = $("#canvas").get()[0].getContext("2d");        
+            ctx.width  = $("#"+divID).width();
+            ctx.height = $("#"+divID).height();
+
+        var tempCanvas = document.createElement("canvas"); // create a temp canvas we use for copying and scrolling
+            tempCanvas.width  =   $("#"+divID).width();
+            tempCanvas.height =   $("#"+divID).height();
+        var tempCtx    = tempCanvas.getContext("2d");
+
+        // used for color distribution
+        var hot = new chroma.ColorScale({
+            colors:['#FFFFFF', '#0033FF', '#FF3300', '#33FF00'],
+            positions:[0, 0.10, 0.25, 0.65],
+            mode:'rgb',
+            limits:[0, 300]
+        });
+
+        var slider = new Slider("slider",audio);
+        	slider.drawFrame();
+
+        var myInterval;
+        audio.addEventListener("play",function(){
+        	myInterval = setInterval(function(){
+        		slider.drawCurrTime(audio.currentTime,audio.duration)
+        	},500);
+        });
+
+        audio.addEventListener("pause",function(){
+        	clearInterval(myInterval);
+        });
+
+
+        window.analyser = analyser;
+        window.audio = audio;
+
+        function  drawSpectrogram(){
+
+            array = analyser.getAverage();
+
+            // side length of each cube
+            var cubeSize = Math.round(0.75*canvasHeight/array.length);
+
+            // copy the current canvas onto the temp canvas
+            var canvas = document.getElementById("canvas");
+
+            tempCtx.drawImage(canvas, 0, 0, canvasWidth, canvasHeight);
+
+            var value;
+            var radius = cubeSize/2;
+
+            // iterate over the elements from the array
+            for (var i = 0; i < array.length; i++) {
+
+                // draw each pixel with the specific color
+                value = array[i];
+                
+                // draw the line at the right side of the canvas
+                ctx.beginPath(); 
+                ctx.arc(canvasWidth - radius,canvasHeight-i*Math.round(canvasHeight/array.length)+radius,radius,0,2*Math.PI,0);
+                ctx.fillStyle = hot.getColor(value).hex();
+                ctx.fill();
+                ctx.lineWidth = 1; // creating a white border
+                ctx.strokeStyle = '#FFFFFF';
+                ctx.stroke();
+
+            }
+            // set translate on the canvas
+            ctx.translate(Math.round(-canvasHeight/array.length), 0);
+
+            // draw the copied image
+            ctx.drawImage(tempCanvas, 0, 0, canvasWidth, canvasHeight, 0, 0, canvasWidth, canvasHeight);
+
+            // reset the transformation matrix
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+        };
+
+        // During loading
+        $("#"+divID).on('audioLoaded',function(){
+            $('#loading').hide()
+            $('#container').show();
+        });
+
+        // PAUSE BUTTON
+        $('#pauseButton').on('click',function(){
+            audio.pause();
+            console.log(audio.paused);
+        });
+
+        // PLAY BUTTON
+        $("#playButton").on('click', function(){
+            audio.play();
+            console.log(audio.paused);
+        });
+
+        $("#"+divID).on('drawReady',function(){
+            drawSpectrogram();
+        });
+
+    });
+
+	</script>
+
+</body>
+
+
+</html>

@@ -1,0 +1,188 @@
+<html>
+
+
+<head>
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+</head>
+
+<body>
+    
+    <!--**********************************
+                    HTML
+    ********************************** *-->
+	<h1 id="loading" style='text-align:center;'> Please wait. The audio is loading.. </h1>
+
+    <div id="container" align="center" style="padding-top:50px;">
+        <div align="center" id="canvasDiv" style="width:800px; height:400px;"></div>
+        <div id="slider" style="width:800px; height:25px;"></div>
+        <button id="playButton">PLAY</button>
+        <button id="pauseButton">PAUSE</button>
+        <button id="ballButton">Line or Quadtratic</button>
+    </div>
+
+    <div align="center" id="canvasDiv" style="width:800px; height:512px;"></div>
+
+    <div id="slider" style="width:800px; height:25px;"></div>
+
+    <!--**********************************
+                 JAVASCRIPT
+    ********************************** -->
+
+    <script type="text/javascript" src="js/chroma.js"></script>
+	<script type="text/javascript" src="js/audioAnalyser.js"></script>
+	<script type="text/javascript" src="js/progressBar.js"></script>
+	
+	<script type="text/javascript">
+
+    $(document).ready(function(){
+
+        $('#container').hide();
+
+    	// AUDIO INPUT VARIABLES
+    	var audio = new Audio();
+    		audio.src = 'music/8-bit.mp3';
+    		audio.controls = true;
+    		audio.autoplay = false;
+    		audio.load();
+
+    	var analyser = new AudioAnalyser(audio,'canvasDiv',128); 
+    		analyser.setup(); 
+    	
+        //CANVAS DECORATIONS
+        var divID = 'canvasDiv';
+
+        var canvasHeight =  $("#"+divID).height();
+        var canvasWidth  =   $("#"+divID).width();
+        $("#"+divID).append('<canvas id="canvas" width="'+canvasWidth+'" height="'+canvasHeight+'" + style="display: block; background-color: #FFFFFF;"></canvas>');
+        var ctx = $("#canvas").get()[0].getContext("2d");        
+            ctx.width  = $("#"+divID).width();
+            ctx.height = $("#"+divID).height();
+
+        var tempCanvas = document.createElement("canvas"); // create a temp canvas we use for copying and scrolling
+            tempCanvas.width  =   $("#"+divID).width();
+            tempCanvas.height =   $("#"+divID).height();
+        var tempCtx    = tempCanvas.getContext("2d");
+
+        var slider = new Slider("slider",audio);
+        	slider.drawFrame();
+
+        var myInterval;
+        audio.addEventListener("play",function(){
+        	myInterval = setInterval(function(){
+        		slider.drawCurrTime(audio.currentTime,audio.duration)
+        	},500);
+        });
+
+        audio.addEventListener("pause",function(){
+        	clearInterval(myInterval);
+        });
+
+    	window.analyser = analyser;
+    	window.audio = audio;
+
+        $("#"+divID).on('drawReady',function(){
+            drawRadialBall();
+        });
+
+        function  drawRadialBall(){
+
+            leftCh = analyser.getLeft();
+            rightCh = analyser.getRight();
+
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+            centerX = canvasWidth/2;
+            centerY = canvasHeight/2;
+
+            cornerRadius = 5;
+
+            window.leftCh = leftCh;
+
+            ctx.beginPath();
+
+            for(i = 0; i < (leftCh.length/2+1); i++){
+
+                switch(ballType){ //switching between the "line" and "quadratic" types
+                    case true: // line interpolation
+                        switch(i){
+                            case 0:
+                                ctx.moveTo( centerX,centerY);
+                                ctx.lineTo( centerX+leftCh[i]*Math.cos(Math.PI*i/(leftCh.length/2) - Math.PI/2), 
+                                            centerY+leftCh[i]*Math.sin(Math.PI*i/(leftCh.length/2) - Math.PI/2));
+                                break;
+                            case leftCh.length/2:
+                                ctx.moveTo( centerX,centerY);
+                                ctx.lineTo( centerX+leftCh[i]*Math.cos(Math.PI*i/(leftCh.length/2) - Math.PI/2), 
+                                            centerY+leftCh[i]*Math.sin(Math.PI*i/(leftCh.length/2) - Math.PI/2));
+                            break;
+                            default:
+                                ctx.moveTo( centerX,centerY);
+                                ctx.lineTo( centerX+leftCh[i]*Math.cos(Math.PI*i/(leftCh.length/2) - Math.PI/2), 
+                                            centerY+leftCh[i]*Math.sin(Math.PI*i/(leftCh.length/2) - Math.PI/2));
+
+                                ctx.moveTo( centerX,centerY);
+                                ctx.lineTo( centerX-rightCh[i]*Math.cos(Math.PI*i/(rightCh.length/2) - Math.PI/2), 
+                                            centerY+rightCh[i]*Math.sin(Math.PI*i/(rightCh.length/2) - Math.PI/2));
+                        }
+                        break;
+
+                    case false:
+
+                        switch(i){ //quadratic interpolation
+                            default:
+                                ctx.moveTo( centerX+leftCh[i]*Math.cos(Math.PI*(i)/(leftCh.length/2) - Math.PI/2),
+                                            centerY+leftCh[i]*Math.sin(Math.PI*(i)/(leftCh.length/2) - Math.PI/2));
+                                
+                                ctx.quadraticCurveTo(   centerX, 
+                                                        centerY,
+                                                        centerX+leftCh[i+1]*Math.cos(Math.PI*(i+1)/(leftCh.length/2) - Math.PI/2),
+                                                        centerY+leftCh[i+1]*Math.sin(Math.PI*(i+1)/(leftCh.length/2) - Math.PI/2));
+
+                                ctx.moveTo( centerX-rightCh[i]*Math.cos(Math.PI*(i)/(rightCh.length/2) - Math.PI/2),
+                                            centerY+rightCh[i]*Math.sin(Math.PI*(i)/(rightCh.length/2) - Math.PI/2));
+                                
+                                ctx.quadraticCurveTo(   centerX, 
+                                                        centerY,
+                                                        centerX-rightCh[i+1]*Math.cos(Math.PI*(i+1)/(rightCh.length/2) - Math.PI/2),
+                                                        centerY+rightCh[i+1]*Math.sin(Math.PI*(i+1)/(rightCh.length/2) - Math.PI/2));
+                        }
+                    break;
+                }
+
+            }
+            ctx.lineWidth = 1; // creating a white border
+            ctx.strokeStyle = '#222222';
+            ctx.stroke();
+        };
+
+        var ballType = true; //toggle between quadratic or linear
+
+        //Line/ Quad BUTTON
+        $('#ballButton').on('click',function(){
+            ballType = ballType ? false : true;
+        });
+
+        // PAUSE BUTTON
+        $('#pauseButton').on('click',function(){
+            audio.pause();
+            console.log(audio.paused);
+        });
+
+        // PLAY BUTTON
+        $("#playButton").on('click', function(){
+            audio.play();
+            console.log(audio.paused);
+        });
+
+        $("#"+divID).on('audioLoaded',function(){
+            $('#loading').hide()
+            $('#container').show();
+        });
+
+    });
+
+	</script>
+
+</body>
+
+
+</html>
