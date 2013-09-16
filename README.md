@@ -16,8 +16,14 @@ example:
 
 Initial Setup: 
 
- // AUDIO INPUT VARIABLES
- 
+//HTML
+
+        <div align="center" id="canvasDiv" style="width:800px; height:400px;"></div>
+        <div id="slider" style="width:800px; height:25px;"></div> // optional slider
+
+
+// AUDIO INPUT VARIABLES
+
         var audio = new Audio();
         	audio.src = 'music/song.mp3';
         	audio.controls = true;
