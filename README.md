@@ -7,22 +7,22 @@ AUDIO INPUT----> [  ANALYSER  ] ---> FFT values
 
 The application requires uses: 
 
-* THE HTML5 WEB AUDIO API <--- Browser dependant. (should funciton on chrome and firefox)
+* THE HTML5 WEB AUDIO API <--- Browser dependant. (should be included on chrome and firefox)
 * JQUERY
 * CHROMA.js
 
 
-example:
+EXAMPLE:
 
 Initial Setup: 
 
-//HTML
+/ HTML
 
         <div align="center" id="canvasDiv" style="width:800px; height:400px;"></div>
         <div id="slider" style="width:800px; height:25px;"></div> // optional slider
 
 
-// AUDIO INPUT VARIABLES
+/ AUDIO INPUT VARIABLES
 
         var audio = new Audio();
         	audio.src = 'music/song.mp3';
