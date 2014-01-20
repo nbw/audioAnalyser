@@ -17,8 +17,10 @@ The application requires:
 <li>JQUERY</li>
 </ul>
 
-<h2>EXAMPLE:</h2>
-
+<h2>EXAMPLES:</h2>
+<h3><a href="http://nathanwillson.com/projects/audioVisualizer/BasicVisualizer/index.html">1. Basic</a></h3>
+<h3><a href="http://nathanwillson.com/projects/audioVisualizer/BasicVisualizer/index.html">2. Spectrogram</a></h3>
+<h3><a href="http://nathanwillson.com/projects/audioVisualizer/BasicVisualizer/index.html">3. Radial</a></h3>
 <h3>Initial Setup: </h3>
 
 <h3>HTML</h3>
