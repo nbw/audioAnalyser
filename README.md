@@ -1,3 +1,5 @@
+<div style="background-color: #d82d2d;">The specs have long since changed and I don't plan on updating this project any time soon. Sorry! -Nathan (Aug 15,2017)</div>
+
 <h1>Audio Analyser:</h1>
 <p>
 The audioAnalyser uses the HTML 5 Audio API (CHROME, FIREFOX) to create an "AudioAnalyser" object, 
