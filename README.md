@@ -1,4 +1,7 @@
-<div style="background-color: #d82d2d;">The specs have long since changed and I don't plan on updating this project any time soon. Sorry! -Nathan (Aug 15,2017)</div>
+<h1>The specs have long since changed and I don't plan on updating this project any time soon.</h1>
+<h2>Sorry! -Nathan (Aug 15,2017)</h2>
+
+<hr>
 
 <h1>Audio Analyser:</h1>
 <p>
